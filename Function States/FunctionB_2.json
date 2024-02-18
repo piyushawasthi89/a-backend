@@ -1,0 +1,245 @@
+{
+    "app_id": "clsakl7g80001jw08gb6qe3q0",
+    "dag_components": [
+        {
+            "components": [
+                {
+                    "custom_code": {
+                        "code": [
+                            "\ndef prepare_whisper_api_inputs(inputs):\n    # Check if the input audio file is in the correct format (mp3)\n    audio_file = inputs['interview_audio']\n    audio_file_lower = audio_file.lower()\n    if not (audio_file_lower.endswith('.mp3')):\n        raise ValueError(\"The input audio file must be in mp3 format\")\n\n    # Prepare the output dictionary with the 'audio' key and the input audio file path as the value\n    outputs = {\"audio\": audio_file}\n\n    return outputs\n"
+                        ],
+                        "function_name": "prepare_whisper_api_inputs",
+                        "inputs": [
+                            {
+                                "example": {
+                                    "content": "Audio content here...",
+                                    "filename": "interview.mp3"
+                                },
+                                "jsonschema": {
+                                    "description": "The MP3 audio file of the user research interview",
+                                    "format": "audio",
+                                    "properties": {
+                                        "content": {
+                                            "type": "string"
+                                        },
+                                        "filename": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                },
+                                "name": "interview_audio"
+                            }
+                        ],
+                        "outputs": [
+                            {
+                                "example": {
+                                    "content": "Audio content here...",
+                                    "filename": "interview.mp3"
+                                },
+                                "jsonschema": {
+                                    "description": "Audio file to transcribe, must be mp3 or wav",
+                                    "format": "audio",
+                                    "properties": {
+                                        "content": {
+                                            "type": "string"
+                                        },
+                                        "filename": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                },
+                                "name": "audio"
+                            }
+                        ],
+                        "thinking_process": "1. The input to our function is 'interview_audio', which is a path to the audio file of the user research interview. We need to prepare this audio file to be used as input for the 'Whisper: Convert speech in audio to text' API.\n2. The Whisper API requires the audio file to be in mp3 or wav format. Therefore, we first need to check if the input audio file is in the correct format.\n3. We do this by checking the file extension of the 'interview_audio' input. If the file extension is not '.mp3' or '.wav', we raise an error.\n4. If the audio file is in the correct format, we create an output dictionary with the key 'audio' and the value as the path to the input audio file.\n5. We return the output dictionary which will be used as input for the Whisper API."
+                    },
+                    "node_idx": 0,
+                    "state": "completed"
+                },
+                {
+                    "api_inputs": null,
+                    "node_idx": 1,
+                    "state": "completed"
+                }
+            ],
+            "state": "completed",
+            "step_idx": 0
+        },
+        {
+            "components": [
+                {
+                    "custom_code": {
+                        "code": [
+                            "\ndef prepare_gpt_api_inputs(inputs):\n    # Prepare the output dictionary\n    outputs = {\"gpt_api_input\": inputs['transcription']}\n\n    return outputs\n"
+                        ],
+                        "function_name": "prepare_gpt_api_inputs",
+                        "inputs": [
+                            {
+                                "example": "Testing, testing, testing. This is a test.",
+                                "jsonschema": {
+                                    "description": "Transcription of the speech in the audio file",
+                                    "format": "text",
+                                    "type": "string"
+                                },
+                                "name": "transcription"
+                            }
+                        ],
+                        "outputs": [
+                            {
+                                "example": "Testing, testing, testing. This is a test.",
+                                "jsonschema": {
+                                    "description": "Prepared input for the GPT-based AI API",
+                                    "format": "text",
+                                    "type": "string"
+                                },
+                                "name": "gpt_api_input"
+                            }
+                        ],
+                        "thinking_process": "1. The input to our function is 'transcription', which is the text transcript of the user research interview. \n2. This transcription will be fed into the GPT-based AI for analysis. The GPT-based AI will be prompted to analyze the transcript for product insights. \n3. We need to prepare the transcript in a format suitable for the GPT-based AI. As the GPT-based AI takes a string as input, we don't need to perform any transformations on the transcript. \n4. After preparing the input, we will create an output dictionary with the key 'gpt_api_input' and the value being the transcript. This will be used as input for the GPT-based AI. \n\nNow, let's write the python function to implement this step."
+                    },
+                    "node_idx": 0,
+                    "state": "completed"
+                },
+                {
+                    "api_gpt": {
+                        "inputs": [
+                            {
+                                "example": "Testing, testing, testing. This is a test.",
+                                "jsonschema": {
+                                    "description": "Prepared input for the GPT-based AI API",
+                                    "format": "text",
+                                    "type": "string"
+                                },
+                                "name": "gpt_api_input"
+                            }
+                        ],
+                        "outputs": [
+                            {
+                                "example": "Insight 1, Insight 2, Insight 3",
+                                "jsonschema": {
+                                    "description": "Output from the GPT-based AI API",
+                                    "format": "text",
+                                    "type": "string"
+                                },
+                                "name": "gpt_api_output"
+                            }
+                        ],
+                        "prompt": "Given the transcript of a user research interview, analyze the conversation and output a list of product insights, ordered by significance (most significant first):\n\n{format_instructions}\n\nTranscript: {gpt_api_input}.",
+                        "thinking_process": "1) The GPT-based model should still take the transcript of the user research interview as input and analyze it for product insights.\n2) The prompt should be updated to instruct the GPT-based model to not only output a list of product insights derived from the transcript, but also order them in terms of significance with the most significant insight being first.\n3) The generated product insights will be in a text format, arranged in order of significance."
+                    },
+                    "api_inputs": null,
+                    "node_idx": 1,
+                    "state": "completed"
+                },
+                {
+                    "custom_code": {
+                        "code": [
+                            "\ndef process_gpt_api_outputs(inputs):\n    # Split the string by commas to get the list of insights\n    insights_list = inputs['gpt_api_output'].split(',')\n\n    # Prepare the output dictionary\n    outputs = {\"product_insights\": insights_list}\n\n    return outputs\n"
+                        ],
+                        "function_name": "process_gpt_api_outputs",
+                        "inputs": [
+                            {
+                                "example": "Insight 1, Insight 2, Insight 3",
+                                "jsonschema": {
+                                    "description": "Output from the GPT-based AI API",
+                                    "format": "text",
+                                    "type": "string"
+                                },
+                                "name": "gpt_api_output"
+                            }
+                        ],
+                        "outputs": [
+                            {
+                                "example": [
+                                    "Insight 1...",
+                                    "Insight 2...",
+                                    "Insight 3..."
+                                ],
+                                "jsonschema": {
+                                    "description": "List of product insights extracted from the user research interview",
+                                    "items": {
+                                        "type": "string"
+                                    },
+                                    "type": "array"
+                                },
+                                "name": "product_insights"
+                            }
+                        ],
+                        "thinking_process": "1. The function will take as input the output from the 'GPT-based AI' API. This output is a string containing the product insights separated by commas.\n2. We need to convert this string into a list of insights. We can do this by splitting the string by commas.\n3. Prepare the output dictionary with the key being 'product_insights' and the value being the list of insights."
+                    },
+                    "node_idx": 2,
+                    "state": "completed"
+                }
+            ],
+            "state": "completed",
+            "step_idx": 1
+        }
+    ],
+    "problem": "I want an app which:\n- takes an MP3 file of a user research interview as input\n- then uses the Whisper API to convert the audio into a transcript \n- then uses the GPT-based AI to analyze the transcript for product insights. The GPT-based AI should be prompted to make it aware that the transcript is of a user research interview\n\nThe output should be a list of the product insights as text.\n\n",
+    "stage": "Success",
+    "step_idx": 2,
+    "workflow_description_component": {
+        "state": "completed",
+        "workflow_description": {
+            "inputs": [
+                {
+                    "example": {
+                        "content": "Audio content here...",
+                        "filename": "interview.mp3"
+                    },
+                    "jsonschema": {
+                        "description": "The MP3 audio file of the user research interview",
+                        "format": "audio",
+                        "properties": {
+                            "content": {
+                                "type": "string"
+                            },
+                            "filename": {
+                                "type": "string"
+                            }
+                        },
+                        "type": "object"
+                    },
+                    "name": "interview_audio"
+                }
+            ],
+            "name": "User Research Interview Insights Extractor",
+            "outputs": [
+                {
+                    "example": [
+                        "Insight 1...",
+                        "Insight 2...",
+                        "Insight 3..."
+                    ],
+                    "jsonschema": {
+                        "description": "List of product insights extracted from the user research interview",
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array"
+                    },
+                    "name": "product_insights"
+                }
+            ],
+            "problem": "I want an app which:\n- takes an MP3 file of a user research interview as input\n- then uses the Whisper API to convert the audio into a transcript \n- then uses the GPT-based AI to analyze the transcript for product insights. The GPT-based AI should be prompted to make it aware that the transcript is of a user research interview\n\nThe output should be a list of the product insights as text.\n\n",
+            "steps": [
+                {
+                    "apis": [
+                        "Whisper: Convert speech in audio to text"
+                    ],
+                    "description": "Convert the user research interview audio to text using the Whisper API.",
+                    "name": "Transcribe Audio"
+                },
+                {
+                    "apis": [
+                        "GPT-based AI"
+                    ],
+                    "description": "Use the GPT-based AI to analyze the transcript for product insights.",
+                    "name": "Analyze Transcript"
+                }
+            ]
+        }
+    }
+}

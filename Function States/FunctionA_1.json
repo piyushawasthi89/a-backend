@@ -1,0 +1,517 @@
+{
+    "app_id": "clsahki030001jm08d91rg4n7",
+    "dag_components": [
+        {
+            "components": [
+                {
+                    "custom_code": {
+                        "code": [
+                            "\n\nimport pandas as pd\n\ndef load_csv_files(inputs):\n    # Read the input CSV files\n    consumption_plan_df = pd.read_csv(inputs['consumption_plan'])\n    inventory_data_df = pd.read_csv(inputs['inventory_data'])\n    replenishment_plan_df = pd.read_csv(inputs['replenishment_plan'])\n\n    # Convert the DataFrames into lists of dictionaries\n    parsed_consumption_plan = consumption_plan_df.to_dict('records')\n    parsed_inventory_data = inventory_data_df.to_dict('records')\n    parsed_replenishment_plan = replenishment_plan_df.to_dict('records')\n\n    # Prepare the output dictionary\n    outputs = {\n        \"parsed_consumption_plan\": parsed_consumption_plan,\n        \"parsed_inventory_data\": parsed_inventory_data,\n        \"parsed_replenishment_plan\": parsed_replenishment_plan\n    }\n\n    return outputs\n\n"
+                        ],
+                        "function_name": "load_csv_files",
+                        "inputs": [
+                            {
+                                "example": {
+                                    "content": "sku,quantity,date\nSKU0000,80,2024-02-01\nSKU0001,45,2024-01-18\nSKU0002,29,2024-02-03\nSKU0003,30,2024-02-14\nSKU0004,1,2024-01-20\nSKU0005,97,2024-01-27\nSKU0006,61,2024-02-15\nSKU0007,14,2024-02-09\nSKU0008,5,2024-01-20\nSKU0009,59,2024-01-18\n",
+                                    "filename": "user_uploaded_consumption_plan.csv"
+                                },
+                                "jsonschema": {
+                                    "description": "The consumption plan as a CSV file.",
+                                    "format": "csv",
+                                    "properties": {
+                                        "content": {
+                                            "type": "string"
+                                        },
+                                        "filename": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                },
+                                "name": "consumption_plan"
+                            },
+                            {
+                                "example": {
+                                    "content": "sku,quantity\nSKU0000,2\nSKU0001,55\nSKU0002,19\nSKU0003,46\nSKU0004,65\nSKU0005,69\nSKU0006,92\nSKU0007,18\nSKU0008,96\nSKU0009,60\n",
+                                    "filename": "user_uploaded_inventory_data.csv"
+                                },
+                                "jsonschema": {
+                                    "description": "The current inventory data as a CSV file.",
+                                    "format": "csv",
+                                    "properties": {
+                                        "content": {
+                                            "type": "string"
+                                        },
+                                        "filename": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                },
+                                "name": "inventory_data"
+                            },
+                            {
+                                "example": {
+                                    "content": "sku,quantity,date,supplier\nSKU0000,63,2024-01-19,ForestFine Woodworks\nSKU0001,77,2024-02-12,Woodland Builders\nSKU0002,36,2024-02-02,MapleCraft Carpentry\nSKU0003,16,2024-01-20,Sawdust Creations\nSKU0004,19,2024-01-20,MapleCraft Carpentry\nSKU0005,72,2024-01-25,PineArt Carpentry\nSKU0006,37,2024-02-02,TimberWorks Inc\nSKU000",
+                                    "filename": "user_uploaded_replenishment_plan.csv"
+                                },
+                                "jsonschema": {
+                                    "description": "The replenishment plan as a CSV file.",
+                                    "format": "csv",
+                                    "properties": {
+                                        "content": {
+                                            "type": "string"
+                                        },
+                                        "filename": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                },
+                                "name": "replenishment_plan"
+                            }
+                        ],
+                        "outputs": [
+                            {
+                                "example": [
+                                    {
+                                        "date": "2024-02-01",
+                                        "quantity": 80,
+                                        "sku": "SKU0000"
+                                    },
+                                    {
+                                        "date": "2024-01-18",
+                                        "quantity": 45,
+                                        "sku": "SKU0001"
+                                    }
+                                ],
+                                "jsonschema": {
+                                    "items": {
+                                        "description": "The parsed consumption plan.",
+                                        "properties": {
+                                            "date": {
+                                                "format": "date",
+                                                "type": "string"
+                                            },
+                                            "quantity": {
+                                                "type": "integer"
+                                            },
+                                            "sku": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "type": "object"
+                                    },
+                                    "type": "array"
+                                },
+                                "name": "parsed_consumption_plan"
+                            },
+                            {
+                                "example": [
+                                    {
+                                        "quantity": 2,
+                                        "sku": "SKU0000"
+                                    },
+                                    {
+                                        "quantity": 55,
+                                        "sku": "SKU0001"
+                                    }
+                                ],
+                                "jsonschema": {
+                                    "items": {
+                                        "description": "The parsed inventory data.",
+                                        "properties": {
+                                            "quantity": {
+                                                "type": "integer"
+                                            },
+                                            "sku": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "type": "object"
+                                    },
+                                    "type": "array"
+                                },
+                                "name": "parsed_inventory_data"
+                            },
+                            {
+                                "example": [
+                                    {
+                                        "date": "2024-01-19",
+                                        "quantity": 63,
+                                        "sku": "SKU0000",
+                                        "supplier": "ForestFine Woodworks"
+                                    },
+                                    {
+                                        "date": "2024-02-12",
+                                        "quantity": 77,
+                                        "sku": "SKU0001",
+                                        "supplier": "Woodland Builders"
+                                    }
+                                ],
+                                "jsonschema": {
+                                    "items": {
+                                        "description": "The parsed replenishment plan.",
+                                        "properties": {
+                                            "date": {
+                                                "format": "date",
+                                                "type": "string"
+                                            },
+                                            "quantity": {
+                                                "type": "integer"
+                                            },
+                                            "sku": {
+                                                "type": "string"
+                                            },
+                                            "supplier": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "type": "object"
+                                    },
+                                    "type": "array"
+                                },
+                                "name": "parsed_replenishment_plan"
+                            }
+                        ],
+                        "thinking_process": "1. The function will first need the pandas library to read the CSV files. We will import this library.\n2. We will define a function called `load_csv_files` that takes an `inputs` dictionary as an argument. The `inputs` dictionary will contain three key-value pairs, with the keys being `'consumption_plan'`, `'inventory_data'`, and `'replenishment_plan'` and the values being the paths to the corresponding CSV files.\n3. Inside this function, we will use the pandas function `read_csv` to read each CSV file.\n4. Once the CSV files are read into pandas DataFrames, we will extract the necessary columns and convert the DataFrames into lists of dictionaries using the `to_dict` method with the `'records'` argument. This will produce the required output format.\n5. We will store these lists of dictionaries in a dictionary named `outputs`, with the keys being `'parsed_consumption_plan'`, `'parsed_inventory_data'`, and `'parsed_replenishment_plan'`.\n6. Finally, `outputs` will be returned from the function.\n\nNow, let's write the python function to implement this step."
+                    },
+                    "node_idx": 0,
+                    "state": "completed"
+                }
+            ],
+            "state": "completed",
+            "step_idx": 0
+        },
+        {
+            "components": [
+                {
+                    "custom_code": {
+                        "code": [
+                            "\n\nfrom datetime import datetime\n\ndef calculate_inventory_levels(inputs):\n    # Initialize inventory dictionary with current inventory data\n    inventory_levels = {item['sku']: item['quantity'] for item in inputs['parsed_inventory_data']}\n\n    # Process consumption plan\n    for action in inputs['parsed_consumption_plan']:\n        if datetime.strptime(action['date'], \"%Y-%m-%d\").date() <= datetime.strptime('2024-02-15', \"%Y-%m-%d\").date():\n            inventory_levels[action['sku']] = max(0, inventory_levels.get(action['sku'], 0) - action['quantity'])\n\n    # Process replenishment plan\n    for action in inputs['parsed_replenishment_plan']:\n        if datetime.strptime(action['date'], \"%Y-%m-%d\").date() <= datetime.strptime('2024-02-15', \"%Y-%m-%d\").date():\n            inventory_levels[action['sku']] = inventory_levels.get(action['sku'], 0) + action['quantity']\n\n    # Convert inventory dictionary to list of dictionaries\n    inventory_levels_by_date = [{'sku': sku, 'quantity': quantity} for sku, quantity in inventory_levels.items()]\n\n    # Prepare the output dictionary\n    outputs = {'inventory_levels_by_date': inventory_levels_by_date}\n\n    return outputs\n\n"
+                        ],
+                        "function_name": "calculate_inventory_levels",
+                        "inputs": [
+                            {
+                                "example": [
+                                    {
+                                        "date": "2024-02-01",
+                                        "quantity": 80,
+                                        "sku": "SKU0000"
+                                    },
+                                    {
+                                        "date": "2024-01-18",
+                                        "quantity": 45,
+                                        "sku": "SKU0001"
+                                    }
+                                ],
+                                "jsonschema": {
+                                    "items": {
+                                        "description": "The parsed consumption plan.",
+                                        "properties": {
+                                            "date": {
+                                                "format": "date",
+                                                "type": "string"
+                                            },
+                                            "quantity": {
+                                                "type": "integer"
+                                            },
+                                            "sku": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "type": "object"
+                                    },
+                                    "type": "array"
+                                },
+                                "name": "parsed_consumption_plan"
+                            },
+                            {
+                                "example": [
+                                    {
+                                        "quantity": 2,
+                                        "sku": "SKU0000"
+                                    },
+                                    {
+                                        "quantity": 55,
+                                        "sku": "SKU0001"
+                                    }
+                                ],
+                                "jsonschema": {
+                                    "items": {
+                                        "description": "The parsed inventory data.",
+                                        "properties": {
+                                            "quantity": {
+                                                "type": "integer"
+                                            },
+                                            "sku": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "type": "object"
+                                    },
+                                    "type": "array"
+                                },
+                                "name": "parsed_inventory_data"
+                            },
+                            {
+                                "example": [
+                                    {
+                                        "date": "2024-01-19",
+                                        "quantity": 63,
+                                        "sku": "SKU0000",
+                                        "supplier": "ForestFine Woodworks"
+                                    },
+                                    {
+                                        "date": "2024-02-12",
+                                        "quantity": 77,
+                                        "sku": "SKU0001",
+                                        "supplier": "Woodland Builders"
+                                    }
+                                ],
+                                "jsonschema": {
+                                    "items": {
+                                        "description": "The parsed replenishment plan.",
+                                        "properties": {
+                                            "date": {
+                                                "format": "date",
+                                                "type": "string"
+                                            },
+                                            "quantity": {
+                                                "type": "integer"
+                                            },
+                                            "sku": {
+                                                "type": "string"
+                                            },
+                                            "supplier": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "type": "object"
+                                    },
+                                    "type": "array"
+                                },
+                                "name": "parsed_replenishment_plan"
+                            }
+                        ],
+                        "outputs": [
+                            {
+                                "example": [
+                                    {
+                                        "quantity": 20,
+                                        "sku": "SKU0000"
+                                    },
+                                    {
+                                        "quantity": 40,
+                                        "sku": "SKU0001"
+                                    }
+                                ],
+                                "jsonschema": {
+                                    "items": {
+                                        "description": "The inventory level for each SKU by the specified date.",
+                                        "properties": {
+                                            "quantity": {
+                                                "type": "integer"
+                                            },
+                                            "sku": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "type": "object"
+                                    },
+                                    "type": "array"
+                                },
+                                "name": "inventory_levels_by_date"
+                            }
+                        ],
+                        "thinking_process": "1. The function `calculate_inventory_levels` will take as input three lists, `parsed_consumption_plan`, `parsed_inventory_data`, and `parsed_replenishment_plan`. Each of these lists contains dictionaries with information about SKUs. \n\n2. First, we need to keep track of the inventory quantities for each SKU. We can use a dictionary for this purpose, with SKUs as keys and their quantities as values. We can initialize this dictionary with the current inventory data.\n\n3. Then, we need to process the replenishment plan. For each replenishment action, if it occurs before or on the specified date, we should add the replenishment quantity to the corresponding SKU's quantity in our inventory dictionary.\n\n4. Next, we need to process the consumption plan. For each consumption action, if it occurs before or on the specified date, we should subtract the consumption quantity from the corresponding SKU's quantity in our inventory dictionary.\n\n5. Note that if at any point the quantity of a SKU in our inventory dictionary becomes negative, we should set it to zero, as we can't have negative quantities in inventory.\n\n6. After processing all actions, the quantities in our inventory dictionary will represent the inventory levels for each SKU by the specified date.\n\n7. Finally, we need to convert our inventory dictionary into a list of dictionaries in the desired output format, and return this list.\n\nNow, let's write the python function to implement this step."
+                    },
+                    "node_idx": 0,
+                    "state": "completed"
+                }
+            ],
+            "state": "completed",
+            "step_idx": 1
+        },
+        {
+            "components": [
+                {
+                    "custom_code": {
+                        "code": [
+                            "\n\nimport pandas as pd\n\ndef generate_output_csv(inputs):\n    # Get the input list of inventory levels\n    inventory_levels = inputs['inventory_levels_by_date']\n\n    # Convert the list of dictionaries to a DataFrame\n    df = pd.DataFrame(inventory_levels)\n\n    # Define the output CSV filename\n    csv_filename = \"inventory_level_15022024.csv\"\n\n    # Write the DataFrame to a CSV file\n    df.to_csv(csv_filename, index=False)\n\n    # Prepare the output dictionary\n    outputs = {\"inventory_level_15022024\": csv_filename}\n\n    return outputs\n\n"
+                        ],
+                        "function_name": "generate_output_csv",
+                        "inputs": [
+                            {
+                                "example": [
+                                    {
+                                        "quantity": 20,
+                                        "sku": "SKU0000"
+                                    },
+                                    {
+                                        "quantity": 40,
+                                        "sku": "SKU0001"
+                                    }
+                                ],
+                                "jsonschema": {
+                                    "items": {
+                                        "description": "The inventory level for each SKU by the specified date.",
+                                        "properties": {
+                                            "quantity": {
+                                                "type": "integer"
+                                            },
+                                            "sku": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "type": "object"
+                                    },
+                                    "type": "array"
+                                },
+                                "name": "inventory_levels_by_date"
+                            }
+                        ],
+                        "outputs": [
+                            {
+                                "example": {
+                                    "content": "sku,quantity\nSKU0000,10\nSKU0001,20\nSKU0002,30\nSKU0003,40\n",
+                                    "filename": "inventory_level_by_15_02_2024.csv"
+                                },
+                                "jsonschema": {
+                                    "description": "The computed inventory level by 15/02/2024 for each SKU.",
+                                    "format": "csv",
+                                    "properties": {
+                                        "content": {
+                                            "type": "string"
+                                        },
+                                        "filename": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                },
+                                "name": "inventory_level"
+                            }
+                        ],
+                        "thinking_process": "1. We will start by importing the `pandas` library which provides easy to use data structures and data analysis tools for Python.\n2. We will define a function `generate_output_csv` that takes an input dictionary as its argument.\n3. Inside the function, we will retrieve the 'inventory_levels_by_date' from the input dictionary.\n4. We will use the `DataFrame` function from the `pandas` library to convert this list of dictionaries into a pandas DataFrame. pandas will automatically use the dictionary keys as column names.\n5. Then we will use the `to_csv` function to write this DataFrame to a CSV file. We will use the filename 'inventory_level_by_15_02_2024.csv'.\n6. Finally, we will prepare the output dictionary by including the filename of the created CSV and return this as the output.\n\nNow, let's write the python function to implement this step."
+                    },
+                    "node_idx": 0,
+                    "state": "completed"
+                }
+            ],
+            "state": "completed",
+            "step_idx": 2
+        }
+    ],
+    "problem": "I want an app that takes the consumption plan, inventory data, and replenishment plan as csv files and then computes the inventory level by 15/02/2024 for each sku. The output is a csv file with sku and quantity columns.",
+    "stage": "Success",
+    "step_idx": 3,
+    "workflow_description_component": {
+        "state": "completed",
+        "workflow_description": {
+            "inputs": [
+                {
+                    "example": {
+                        "content": "sku,quantity,date\nSKU0000,80,2024-02-01\nSKU0001,45,2024-01-18\nSKU0002,29,2024-02-03\nSKU0003,30,2024-02-14\nSKU0004,1,2024-01-20\nSKU0005,97,2024-01-27\nSKU0006,61,2024-02-15\nSKU0007,14,2024-02-09\nSKU0008,5,2024-01-20\nSKU0009,59,2024-01-18\n",
+                        "filename": "user_uploaded_consumption_plan.csv"
+                    },
+                    "jsonschema": {
+                        "description": "The consumption plan as a CSV file.",
+                        "format": "csv",
+                        "properties": {
+                            "content": {
+                                "type": "string"
+                            },
+                            "filename": {
+                                "type": "string"
+                            }
+                        },
+                        "type": "object"
+                    },
+                    "name": "consumption_plan"
+                },
+                {
+                    "example": {
+                        "content": "sku,quantity\nSKU0000,2\nSKU0001,55\nSKU0002,19\nSKU0003,46\nSKU0004,65\nSKU0005,69\nSKU0006,92\nSKU0007,18\nSKU0008,96\nSKU0009,60\n",
+                        "filename": "user_uploaded_inventory_data.csv"
+                    },
+                    "jsonschema": {
+                        "description": "The current inventory data as a CSV file.",
+                        "format": "csv",
+                        "properties": {
+                            "content": {
+                                "type": "string"
+                            },
+                            "filename": {
+                                "type": "string"
+                            }
+                        },
+                        "type": "object"
+                    },
+                    "name": "inventory_data"
+                },
+                {
+                    "example": {
+                        "content": "sku,quantity,date,supplier\nSKU0000,63,2024-01-19,ForestFine Woodworks\nSKU0001,77,2024-02-12,Woodland Builders\nSKU0002,36,2024-02-02,MapleCraft Carpentry\nSKU0003,16,2024-01-20,Sawdust Creations\nSKU0004,19,2024-01-20,MapleCraft Carpentry\nSKU0005,72,2024-01-25,PineArt Carpentry\nSKU0006,37,2024-02-02,TimberWorks Inc\nSKU000",
+                        "filename": "user_uploaded_replenishment_plan.csv"
+                    },
+                    "jsonschema": {
+                        "description": "The replenishment plan as a CSV file.",
+                        "format": "csv",
+                        "properties": {
+                            "content": {
+                                "type": "string"
+                            },
+                            "filename": {
+                                "type": "string"
+                            }
+                        },
+                        "type": "object"
+                    },
+                    "name": "replenishment_plan"
+                }
+            ],
+            "name": "Inventory Level Computation",
+            "outputs": [
+                {
+                    "example": {
+                        "content": "sku,quantity\nSKU0000,10\nSKU0001,20\nSKU0002,30\nSKU0003,40\n",
+                        "filename": "inventory_level_by_15_02_2024.csv"
+                    },
+                    "jsonschema": {
+                        "description": "The computed inventory level by 15/02/2024 for each SKU.",
+                        "format": "csv",
+                        "properties": {
+                            "content": {
+                                "type": "string"
+                            },
+                            "filename": {
+                                "type": "string"
+                            }
+                        },
+                        "type": "object"
+                    },
+                    "name": "inventory_level"
+                }
+            ],
+            "problem": "I want an app that takes the consumption plan, inventory data, and replenishment plan as csv files and then computes the inventory level by 15/02/2024 for each sku. The output is a csv file with sku and quantity columns.",
+            "steps": [
+                {
+                    "apis": [],
+                    "description": "Load the consumption plan, inventory data, and replenishment plan from the provided CSV files.",
+                    "name": "Load CSV Files"
+                },
+                {
+                    "apis": [],
+                    "description": "Compute the inventory level for each SKU based on the consumption plan, current inventory data, and replenishment plan.",
+                    "name": "Calculate Inventory Levels"
+                },
+                {
+                    "apis": [],
+                    "description": "Create a CSV file with SKU and quantity columns representing the inventory level by 15/02/2024.",
+                    "name": "Generate Output CSV"
+                }
+            ]
+        }
+    }
+}
