@@ -27,25 +27,27 @@ def get_function():
     version = request.args.get('version')
     function_version = int(version)
     print(function_content_dict)
-    src_function = function_content_dict[function_name][0]
+    src_function = function_content_dict[function_name][0].content
     dst_function = ''
     if function_version == 0:
         return json.dumps(src_function)
     else:
-        for i in range(1, function_version):
-            patch = function_content_dict[function_name][i]
+        for i in range(1, function_version + 1):
+            patch = function_content_dict[function_name][i].content
             dst_function = patch.apply(src_function)
             src_function = dst_function
     return json.dumps(src_function)
 
 @app.route('/')
-def get_files():
+def get_function_name_and_versions():
     # function_content_dict = function_parser.parse_function_files('Function States/')
     data = []
+    print(function_content_dict)
     for function_name, function_list in function_content_dict.items():
-        data.append({function_name: len(function_list)})
-    # session['function_content_dict'] = pickle.dumps(function_content_dict)
-    # print(json.dumps(data))
+        function_name_and_versions = {}
+        function_name_and_versions["name"] = function_name
+        function_name_and_versions["versions"] = [obj.version for obj in function_list]
+        data.append(function_name_and_versions)
     return json.dumps(data)
 
 if __name__ == '__main__':
