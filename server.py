@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request, g, session
+from flask import Flask, jsonify, request, g, session, abort
 import function_parser
 import json
 from flask_cors import CORS, cross_origin
@@ -11,10 +11,15 @@ CORS(app)
 
 function_content_dict = None
 
-@app.before_request
-def initialize_global_variable():
-    global function_content_dict
-    function_content_dict = function_parser.parse_function_files('Function States/')
+def are_parameters_valid(function_name, function_version):
+    if function_name in function_content_dict and function_version < len(function_content_dict[function_name]):
+        return True
+    return False
+
+# @app.before_request
+# def initialize_global_variable():
+#     global function_content_dict
+#     function_content_dict = function_parser.parse_function_files('Function States/')
     
 
 @app.route('/api')
@@ -26,23 +31,38 @@ def get_function():
     function_name = request.args.get('name')
     version = request.args.get('version')
     function_version = int(version)
-    print(function_content_dict)
     src_function = function_content_dict[function_name][0].content
     dst_function = ''
-    if function_version == 0:
-        return json.dumps(src_function)
+    if are_parameters_valid(function_name, function_version):
+        if function_version == 0:
+            return json.dumps(src_function)
+        else:
+            for i in range(1, function_version + 1):
+                patch = function_content_dict[function_name][i].content
+                problem = function_content_dict[function_name][i].problem
+                dst_function = patch.apply(src_function)
+                src_function = dst_function
+        response = {"function": src_function, "updated_prompt": problem}
+        return json.dumps(response)
     else:
-        for i in range(1, function_version + 1):
-            patch = function_content_dict[function_name][i].content
-            dst_function = patch.apply(src_function)
-            src_function = dst_function
-    return json.dumps(src_function)
+        abort(400, "Invalid request")
+    
+
+@app.route('/get_updated_prompt')
+def get_updated_prompt():
+    function_name = request.args.get('name')
+    version = request.args.get('version')
+    function_version = int(version)
+    if are_parameters_valid(function_name, function_version):
+        return json.dumps({"value": function_content_dict[function_name][function_version].problem})
+    else:
+        abort(400, "Invalid request")
 
 @app.route('/')
 def get_function_name_and_versions():
-    # function_content_dict = function_parser.parse_function_files('Function States/')
+    global function_content_dict
+    function_content_dict = function_parser.parse_function_files('Function States/')
     data = []
-    print(function_content_dict)
     for function_name, function_list in function_content_dict.items():
         function_name_and_versions = {}
         function_name_and_versions["name"] = function_name

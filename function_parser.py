@@ -4,11 +4,14 @@ from pathlib import Path
 import re
 import bisect
 
+from openai_client import call_openai_api
+
 class FunctionStates:
-    def __init__(self, version, content):
+    def __init__(self, version, content, problem_statement):
         self.version = int(version)
         self.content = content
         self.is_diff = False
+        self.problem = problem_statement
     
     def setIsDiff(self, is_diff):
         self.is_diff = is_diff
@@ -18,6 +21,9 @@ class FunctionStates:
     
     def getVersion(self):
         return self.version
+    
+    def updateProblemStatement(self, problem_statement):
+        self.problem = problem_statement
 
 def parse_function_name_version(filename):
     pattern = r'Function([A-Za-z]+)_(\d+)\.json'
@@ -31,7 +37,8 @@ def parse_file_content_to_dict(files):
     for file in files:
         function_name, function_version = parse_function_name_version(file.name)
         if function_name is not None and function_version is not None:
-            function_obj = FunctionStates(function_version, read_file_content(file))
+            json_data = read_file_content(file)
+            function_obj = FunctionStates(function_version, json_data, json_data['problem'])
             if function_name not in function_content_dict:
                 function_states = [function_obj]
                 function_content_dict[function_name] = function_states
@@ -44,13 +51,19 @@ def parse_file_content_to_dict(files):
 
 def create_diff_states(function_content_dict):
     for f in function_content_dict.items():
+        messages = []
         function_states = f[1]
         src = function_states[0].content
+        messages.append(create_message(f"given initial problem statement: {function_states[0].problem}  json {src}", "user"))
         for i in range(1, len(function_states)):
             dst = function_states[i].content
             diff = jsonpatch.JsonPatch.from_diff(src, dst)
+            messages.append(create_message(f"given following json diff: {diff.patch}", "user"))
+            messages.append(create_message(f"update the following problem statement: {function_states[i-1].problem}", "user"))
+            updated_problem_statement = update_problem_statement(messages)
             function_states[i].content = diff
             function_states[i].is_diff = True
+            function_states[i].problem = updated_problem_statement
             src = dst
 
 def sort_by_version(x):
@@ -66,31 +79,25 @@ def parse_function_files(file_dir):
     function_content_dict = parse_file_content_to_dict(files)
     create_diff_states(function_content_dict)
     return function_content_dict
-    # for file_path in files:
-    #     with open(file_path, 'r') as file:
-    #         function_content_dict[file_path.name] = json.load(file)
-    #     match = re.search(pattern, file_path.name)
-    #     if match:
-    #         function_name = match.group(1)
-    #         function_version = match.group(2)
-    #         if function_name in function_version_dict:
-    #             # If the key exists, increment the value
-    #             function_version_dict[function_name] += 1
-    #         else:
-    #             # If the key does not exist, insert the key with a value of 1
-    #             function_version_dict[function_name] = 1
 
-    # function_diff_dict = {}
-    # for function_name, function_version in function_version_dict.items():
-    #     function_diff_list = []
-    #     src_file_content = function_content_dict["Function{}_{}.json".format(function_name, 0)]
-    #     function_diff_list.append(src_file_content)
-    #     for i in range(1, function_version):
-    #         full_file_name = "Function{}_{}.json".format(function_name, i)
-    #         dst_file_content = function_content_dict[full_file_name]
-    #         patch = jsonpatch.JsonPatch.from_diff(src_file_content, dst_file_content)
-    #         function_diff_list.append(patch)
-    #         src_file_content = dst_file_content
-    #     function_diff_dict[function_name] = function_diff_list
-    #     function_diff_list = []
-    # return function_diff_dict
+def update_problem_statement(messages):
+    response = call_openai_api(messages)
+    if response:
+        updated_problem = response['choices'][0]['message']['content']
+        matches = re.findall(r'"(.*?)"', updated_problem)
+        if matches:
+            updated_problem = matches[0]
+            return updated_problem
+        matches = re.findall(r'(?<=:).*', updated_problem)
+        if matches:
+            updated_problem = matches[0]
+            return updated_problem
+        return updated_problem
+        # messages.append(create_message(updated_problem, "assistant"))
+    raise ValueError("failed to get response from OpenAI")
+
+def create_message(message, role):
+    return {
+        "content": message,
+        "role": role
+    }     
